@@ -1,8 +1,8 @@
 import { Redis } from '@upstash/redis'
 
 const redis = new Redis({
-  url: 'https://game-bullfrog-16695.upstash.io',
-  token: 'AUE3AAIjcDE4ZTVlNTRmODk1YzA0ZWUwOGI5OWUwNjdlYWZmNWRlZHAxMA',
+  url: process.env.UPSTASH_REDIS_REST_URL || ' ',
+  token: process.env.UPSTASH_REDIS_REST_TOKEN || ' ',
 })
 
 const countryList = [

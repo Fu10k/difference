@@ -1,9 +1,15 @@
+import dotenv from 'dotenv'
 import { Redis } from '@upstash/redis'
+import { PrismaClient } from '@prisma/client'
+
+dotenv.config()
 
 const redis = new Redis({
-  url: process.env.UPSTASH_REDIS_REST_URL || ' ',
-  token: process.env.UPSTASH_REDIS_REST_TOKEN || ' ',
+  url: process.env.UPSTASH_REDIS_REST_URL!,
+  token: process.env.UPSTASH_REDIS_REST_TOKEN!,
 })
+
+const prisma = new PrismaClient()
 
 const countryList = [
 	"Afghanistan",
@@ -257,21 +263,53 @@ const countryList = [
 	"Åland Islands"
 ]
 
-countryList.forEach((country) => {
-  const term = country.toUpperCase()
-  const terms: {score: 0, member: string}[] = []
+async function seedData() {
+	try {
+		for (const country of countryList) {
+			const term = country.toUpperCase()
+			const terms: { score: number; member: string }[] = []
 
-  for(let i = 0; i <= term.length; i++) {
-    terms.push({score: 0, member: term.substring(0, i)})
-  }
+			for(let i = 0; i <= term.length; i++) {
+				terms.push({score: 0, member: term.substring(0, i)})
+			}
+		
+			terms.push({ score: 0, member: term + '*' })
 
-  terms.push({ score: 0, member: term + '*' })
+			//Redis
+			for (const { score, member } of terms) {
+        await redis.zadd('terms', { score, member })
+      }
 
-  const populateDb = async () => {
-    for (const { score, member } of terms) {
-      await redis.zadd('terms', { score, member })
-    }
-  }
+			//Postgres
+      await prisma.term.createMany({
+        data: terms,
+        skipDuplicates: true
+      })
+		}
+	} catch (err) {
+		console.error('Error seeding data:', err)
+    process.exit(1)
+	} finally {
+		await prisma.$disconnect()
+	}
+}
 
-  populateDb()
-})
+seedData()
+// countryList.forEach((country) => {
+//   const term = country.toUpperCase()
+//   const terms: {score: 0, member: string}[] = []
+
+  // for(let i = 0; i <= term.length; i++) {
+  //   terms.push({score: 0, member: term.substring(0, i)})
+  // }
+
+  // terms.push({ score: 0, member: term + '*' })
+
+//   const populateDb = async () => {
+//     for (const { score, member } of terms) {
+//       await redis.zadd('terms', { score, member })
+//     }
+//   }
+
+//   populateDb()
+// })

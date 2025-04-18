@@ -1,6 +1,7 @@
 "use client"
 
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { useEffect, useState } from "react"
 // import { useDebounce } from "@/hooks/use-debounce"
 
@@ -10,7 +11,7 @@ export default function Home() {
     results: string[]
     duration: number
   }>()
-
+  const [activeTab, setActiveTab] = useState<string>('redis')
   // const debounceInput = useDebounce(input, 300)
 
   useEffect(() => {
@@ -20,8 +21,23 @@ export default function Home() {
         return
       }
 
+      let url = ''
+      switch(activeTab) {
+        case 'postgreSQL':
+          url = ``
+          break
+        case 'redis':
+          url = `https://difference-api.differenceapi.workers.dev/api/search?q=${encodeURIComponent(input.trim())}`
+          break
+        case 'mongoDB':
+          url = ``
+          break
+        default:
+          return
+      }
+
       try {
-        const res = await fetch(`https://difference-api.differenceapi.workers.dev/api/search?q=${encodeURIComponent(input.trim())}`)
+        const res = await fetch(url)
 
         if(!res.ok) {
           setSearchResults(undefined)
@@ -40,7 +56,7 @@ export default function Home() {
     }
 
     fetchData()
-  }, [input]) //whenever input changes, this effect will run
+  }, [input, activeTab]) //whenever input, tab changes, this effect will run
 
   return (
     <main className="h-screen w-screen grainy">
@@ -80,6 +96,18 @@ export default function Home() {
               ) : null}
             </CommandList>
           </Command>
+        </div>
+        <div>
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="text-center">
+            <TabsList>
+              <TabsTrigger value="postgreSQL">PostgreSQL</TabsTrigger>
+              <TabsTrigger value="redis">Redis</TabsTrigger>
+              <TabsTrigger value="mongoDB">MongoDB</TabsTrigger>
+            </TabsList>
+            <TabsContent value="postgreSQL">Engine: PostgreSQL</TabsContent>
+            <TabsContent value="redis">Engine: Redis</TabsContent>
+            <TabsContent value="mongoDB">Engine: MongoDB</TabsContent>
+          </Tabs>
         </div>
       </div>
     </main>

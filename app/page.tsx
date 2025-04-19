@@ -21,23 +21,8 @@ export default function Home() {
         return
       }
 
-      let url = ''
-      switch(activeTab) {
-        case 'postgreSQL':
-          url = ``
-          break
-        case 'redis':
-          url = `https://difference-api.differenceapi.workers.dev/api/search?q=${encodeURIComponent(input.trim())}`
-          break
-        case 'mongoDB':
-          url = ``
-          break
-        default:
-          return
-      }
-
       try {
-        const res = await fetch(url)
+        const res = await fetch(`https://difference-api.differenceapi.workers.dev/api/search?q=${encodeURIComponent(input.trim())}&engine=${activeTab}`)
 
         if(!res.ok) {
           setSearchResults(undefined)
@@ -102,11 +87,11 @@ export default function Home() {
             <TabsList>
               <TabsTrigger value="postgreSQL">PostgreSQL</TabsTrigger>
               <TabsTrigger value="redis">Redis</TabsTrigger>
-              <TabsTrigger value="mongoDB">MongoDB</TabsTrigger>
+              {/* <TabsTrigger value="mongoDB">MongoDB</TabsTrigger> */}
             </TabsList>
             <TabsContent value="postgreSQL">Engine: PostgreSQL</TabsContent>
             <TabsContent value="redis">Engine: Redis</TabsContent>
-            <TabsContent value="mongoDB">Engine: MongoDB</TabsContent>
+            {/* <TabsContent value="mongoDB">Engine: MongoDB</TabsContent> */}
           </Tabs>
         </div>
       </div>

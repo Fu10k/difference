@@ -282,7 +282,11 @@ async function seedData() {
 
 			//Postgres
       await prisma.term.createMany({
-        data: terms,
+        data: terms.map(term => ({
+					score: term.score,
+					member: term.member,
+					isComplete: term.member.endsWith('*'),
+				})),
         skipDuplicates: true
       })
 		}
